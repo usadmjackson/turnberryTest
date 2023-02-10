@@ -21,14 +21,14 @@ const CustomerRewards = () => {
       //Simulate API call to fetch data
       setTimeout(() => {
         const response = [
-          { transactionId: 1, customerId: 1, month: "January", amount: 120 },
-          { transactionId: 2, customerId: 1, month: "January", amount: 90 },
-          { transactionId: 3, customerId: 1, month: "February", amount: 90 },
-          { transactionId: 4, customerId: 1, month: "March", amount: 110 },
-          { transactionId: 5, customerId: 2, month: "January", amount: 70 },
-          { transactionId: 6, customerId: 2, month: "February", amount: 80 },
-          { transactionId: 7, customerId: 2, month: "February", amount: 150 },
-          { transactionId: 8, customerId: 2, month: "March", amount: 100 },
+          { transactionId: 1, customerId: 1, date: "2023/01/02", amount: 120 },
+          { transactionId: 2, customerId: 1, date: "2023/01/02", amount: 90 },
+          { transactionId: 3, customerId: 1, date: "2023/02/02", amount: 90 },
+          { transactionId: 4, customerId: 1, date: "2023/03/02", amount: 110 },
+          { transactionId: 5, customerId: 2, date: "2022/08/09", amount: 70 },
+          { transactionId: 6, customerId: 2, date: "2022/09/22", amount: 80 },
+          { transactionId: 7, customerId: 2, date: "2022/09/30", amount: 150 },
+          { transactionId: 8, customerId: 2, date: "2022/10/11", amount: 100 },
         ];
         setData(response);
         setLoading(false);
@@ -41,12 +41,14 @@ const CustomerRewards = () => {
   useEffect(() => {
     if (!loading && data) {
       const rewards = {};
-      data.forEach(({ customerId, amount, month }) => {
+      data.forEach(({ customerId, amount, date }) => {
         if (!rewards[customerId]) {
           rewards[customerId] = {
             Total: 0,
           };
         }
+        let month =
+          new Date(date).getFullYear() + "/" + (new Date(date).getMonth() + 1);
         if (!rewards[customerId][month]) {
           rewards[customerId][month] = 0;
         }
@@ -68,16 +70,16 @@ const CustomerRewards = () => {
           <thead>
             <tr>
               <th>Customer Id</th>
-              <th>Month</th>
+              <th>Date</th>
               <th>Amount</th>
               <th>Points</th>
             </tr>
           </thead>
           <tbody>
-            {data.map(({ transactionId, customerId, month, amount }) => (
+            {data.map(({ transactionId, customerId, date, amount }) => (
               <tr key={transactionId}>
                 <td>{customerId}</td>
-                <td>{month}</td>
+                <td>{date}</td>
                 <td>{amount}</td>
                 <td>{calculatePoints(amount)}</td>
               </tr>
@@ -87,7 +89,7 @@ const CustomerRewards = () => {
       )}
       {!loading &&
         Object.keys(rewards).map((customerId) => (
-          <table>
+          <table key={customerId}>
             <thead>
               <tr>
                 <th>
