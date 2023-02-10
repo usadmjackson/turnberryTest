@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 
 const calculatePoints = (amount) => {
   let points = 0;
@@ -13,8 +13,6 @@ const calculatePoints = (amount) => {
 
 const CustomerRewards = () => {
   const [data, setData] = useState([]);
-  const [rewards, setRewards] = useState({});
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -31,82 +29,80 @@ const CustomerRewards = () => {
           { transactionId: 8, customerId: 2, date: "2022/10/11", amount: 100 },
         ];
         setData(response);
-        setLoading(false);
       }, 2000);
     };
 
     fetchData();
   }, []);
 
-  useEffect(() => {
-    if (!loading && data) {
-      const rewards = {};
-      data.forEach(({ customerId, amount, date }) => {
-        if (!rewards[customerId]) {
-          rewards[customerId] = {
-            Total: 0,
-          };
-        }
-        let month =
-          new Date(date).getFullYear() + "/" + (new Date(date).getMonth() + 1);
-        if (!rewards[customerId][month]) {
-          rewards[customerId][month] = 0;
-        }
-        const points = calculatePoints(amount);
-        rewards[customerId].Total += points;
-        rewards[customerId][month] += points;
-      });
-      console.log(rewards);
-      setRewards(rewards);
-    }
+  const rewards = useMemo(() => {
+    const rewards = {};
+    data.forEach(({ customerId, amount, date }) => {
+      if (!rewards[customerId]) {
+        rewards[customerId] = {
+          Total: 0,
+        };
+      }
+      let month =
+        new Date(date).getFullYear() + "/" + (new Date(date).getMonth() + 1);
+      if (!rewards[customerId][month]) {
+        rewards[customerId][month] = 0;
+      }
+      const points = calculatePoints(amount);
+      rewards[customerId].Total += points;
+      rewards[customerId][month] += points;
+    });
+    console.log(rewards);
+    return rewards;
   }, [data]);
 
   return (
     <div>
-      {loading ? (
+      {data.length === 0 ? (
         <p>Loading...</p>
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Customer Id</th>
-              <th>Date</th>
-              <th>Amount</th>
-              <th>Points</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map(({ transactionId, customerId, date, amount }) => (
-              <tr key={transactionId}>
-                <td>{customerId}</td>
-                <td>{date}</td>
-                <td>{amount}</td>
-                <td>{calculatePoints(amount)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-      {!loading &&
-        Object.keys(rewards).map((customerId) => (
-          <table key={customerId}>
+        <>
+          <table>
             <thead>
               <tr>
-                <th>
-                  <h2>Customer Id: {customerId}</h2>
-                </th>
+                <th>Customer Id</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Points</th>
               </tr>
             </thead>
-            <tbody key={customerId}>
-              {Object.keys(rewards[customerId]).map((key) => (
-                <tr key={key}>
-                  <td>{key}</td>
-                  <td>{rewards[customerId][key]}</td>
+            <tbody>
+              {data.map(({ transactionId, customerId, date, amount }) => (
+                <tr key={transactionId}>
+                  <td>{customerId}</td>
+                  <td>{date}</td>
+                  <td>{amount}</td>
+                  <td>{calculatePoints(amount)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-        ))}
+          {Object.keys(rewards).map((customerId) => (
+            <table key={customerId}>
+              <thead>
+                <tr>
+                  <th>
+                    <h2>Customer Id: {customerId}</h2>
+                  </th>
+                </tr>
+              </thead>
+              <tbody key={customerId}>
+                {Object.keys(rewards[customerId]).map((key) => (
+                  <tr key={key}>
+                    <td>{key}</td>
+                    <td>{rewards[customerId][key]}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ))}
+        </>
+      )}
     </div>
   );
 };
