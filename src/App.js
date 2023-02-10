@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 const calculatePoints = (amount) => {
   let points = 0;
@@ -19,37 +19,45 @@ const CustomerRewards = () => {
   useEffect(() => {
     const fetchData = async () => {
       //Simulate API call to fetch data
-      const response = [
-        { customerId: 1, month: 'January', amount: 120 },
-        { customerId: 1, month: 'February', amount: 90 },
-        { customerId: 1, month: 'March', amount: 110 },
-        { customerId: 2, month: 'January', amount: 70 },
-        { customerId: 2, month: 'February', amount: 80 },
-        { customerId: 2, month: 'March', amount: 100 },
-      ];
-
-      setData(response);
-      setLoading(false);
+      setTimeout(() => {
+        const response = [
+          { transactionId: 1, customerId: 1, month: "January", amount: 120 },
+          { transactionId: 2, customerId: 1, month: "January", amount: 90 },
+          { transactionId: 3, customerId: 1, month: "February", amount: 90 },
+          { transactionId: 4, customerId: 1, month: "March", amount: 110 },
+          { transactionId: 5, customerId: 2, month: "January", amount: 70 },
+          { transactionId: 6, customerId: 2, month: "February", amount: 80 },
+          { transactionId: 7, customerId: 2, month: "February", amount: 150 },
+          { transactionId: 8, customerId: 2, month: "March", amount: 100 },
+        ];
+        setData(response);
+        setLoading(false);
+      }, 2000);
     };
 
     fetchData();
   }, []);
 
   useEffect(() => {
-    if (!loading) {
+    if (!loading && data) {
       const rewards = {};
-      data.forEach(({ customerId, amount }) => {
+      data.forEach(({ customerId, amount, month }) => {
         if (!rewards[customerId]) {
           rewards[customerId] = {
-            total: 0,
+            Total: 0,
           };
         }
+        if (!rewards[customerId][month]) {
+          rewards[customerId][month] = 0;
+        }
         const points = calculatePoints(amount);
-        rewards[customerId].total += points;
+        rewards[customerId].Total += points;
+        rewards[customerId][month] += points;
       });
+      console.log(rewards);
       setRewards(rewards);
     }
-  }, [data, loading]);
+  }, [data]);
 
   return (
     <div>
@@ -66,8 +74,8 @@ const CustomerRewards = () => {
             </tr>
           </thead>
           <tbody>
-            {data.map(({ customerId, month, amount }, index) => (
-              <tr key={index}>
+            {data.map(({ transactionId, customerId, month, amount }) => (
+              <tr key={transactionId}>
                 <td>{customerId}</td>
                 <td>{month}</td>
                 <td>{amount}</td>
@@ -77,17 +85,28 @@ const CustomerRewards = () => {
           </tbody>
         </table>
       )}
-      {!loading && (
-        <div>
-          {Object.keys(rewards).map((customerId) => (
-            <div key={customerId}>
-              <h2>Customer Id: {customerId}</h2>
-              <p>Total Points: {rewards[customerId].total}</p>
-            </div>
-          ))}
-        </div>)}
+      {!loading &&
+        Object.keys(rewards).map((customerId) => (
+          <table>
+            <thead>
+              <tr>
+                <th>
+                  <h2>Customer Id: {customerId}</h2>
+                </th>
+              </tr>
+            </thead>
+            <tbody key={customerId}>
+              {Object.keys(rewards[customerId]).map((key) => (
+                <tr key={key}>
+                  <td>{key}</td>
+                  <td>{rewards[customerId][key]}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ))}
     </div>
-  )
-}
+  );
+};
 
 export default CustomerRewards;
